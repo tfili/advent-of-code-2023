@@ -6,10 +6,17 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"regexp"
-	"strconv"
 	"strings"
 )
+
+func filter[T any](ss []T, test func(T) bool) (ret []T) {
+    for _, s := range ss {
+        if test(s) {
+            ret = append(ret, s)
+        }
+    }
+    return
+}
 
 func Run(args []string) {   
 	if len(args) == 0 {
@@ -21,20 +28,64 @@ func Run(args []string) {
     util.Check(err)
     defer file.Close()
 
-	re := regexp.MustCompile(`\D`)
+	numberMappings := getMappings();
+
 	scanner := bufio.NewScanner(file)
 	result := 0
     for scanner.Scan() {
-		numbersArray := strings.Split(re.ReplaceAllString(scanner.Text(), ""), "")
-		numbersLen := len(numbersArray)
-		if numbersLen > 0 {
-			n, err := strconv.Atoi(numbersArray[0] + numbersArray[numbersLen-1])
-			util.Check(err)
-			result += n
+		line := scanner.Text()
+		lineLength := len(line)
+		values := make([]int, len(line))
+		for key, value := range numberMappings {
+			index := 0
+			for {
+				subIndex := strings.Index(line[(index):], key)
+				if subIndex == -1 {
+					break
+				}
+				index += subIndex
+				values[index] = value
+				index++
+				if index >= lineLength {
+					break
+				}
+			}
+		}
+
+		filterFunc := func(n int) bool { return n != 0 }
+		values = filter(values, filterFunc)
+		lenValues := len(values)
+		if (lenValues != 0) {
+ 			result += values[0] * 10 + values[lenValues-1]
 		}
     }
 
 	util.Check(scanner.Err())
 
 	fmt.Println(result)
+}
+
+func getMappings() map[string]int {
+	numberMappings := map[string]int {
+		"one"   : 1,
+		"1"     : 1,
+		"two"   : 2,
+		"2"     : 2,
+		"three" : 3,
+		"3"     : 3,
+		"four"  : 4,
+		"4"     : 4,
+		"five"  : 5,
+		"5"     : 5,
+		"six"   : 6,
+		"6"     : 6,
+		"seven" : 7,
+		"7"     : 7,
+		"eight" : 8,
+		"8"     : 8,
+		"nine"  : 9,
+		"9"     : 9,
+	}
+
+	return numberMappings;
 }
