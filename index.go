@@ -2,6 +2,7 @@ package main
 
 import (
 	day1 "adventofcode/day1"
+	day2 "adventofcode/day2"
 	util "adventofcode/util"
 )
 
@@ -19,7 +20,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	dayFuncs := []DayFunc{day1.Run}
+	dayFuncs := []DayFunc{day1.Run, day2.Run}
 	day, err := strconv.Atoi(os.Args[1])
 	util.Check(err)
 
