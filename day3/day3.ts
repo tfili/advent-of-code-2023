@@ -1,0 +1,70 @@
+import fs from "fs";
+
+const EMPTY = 0;
+const SYMBOL = -1
+
+const lines = fs
+  .readFileSync(process.argv[2], "utf-8")
+  .split(/\r?\n/)
+  .filter((line) => line.length > 0);
+
+const height = lines.length;
+if (height === 0) {
+  console.log("No rows");
+  process.exit(1);
+}
+const width = lines[0].length;
+
+const grid = new Array(height)
+  .fill(false)
+  .map(() => new Array(width).fill(false));
+
+const gridNumbers: number[] = []
+let lastIndex;
+for (let row = 0; row < height; ++row) {
+  for (let col = 0; col < width; ++col) {
+    const c = lines[row][col];
+    const n = Number(c);
+
+    if (Number.isInteger(n)) {
+      if (lastIndex === undefined) {
+        let numberStr = c;
+        let it = col + 1;
+        while (!isNaN(Number(lines[row][it]))) {
+          numberStr += lines[row][it];
+          ++it;
+        }
+        const lastNumber = Number(numberStr);
+        lastIndex = gridNumbers.length;
+        gridNumbers.push(lastNumber)
+      }
+      grid[row][col] = lastIndex;
+    } else {
+      grid[row][col] = c === "." ? EMPTY : SYMBOL;
+      lastIndex = undefined;
+    }
+  }
+}
+
+const uniqueValues = new Set<number>();
+grid.forEach((row, rowIndex) => {
+  row.forEach((col, colIndex) => {
+    if (col === SYMBOL) {
+      const minRow = Math.max(rowIndex - 1, 0);
+      const maxRow = Math.min(rowIndex + 1, height);
+      const minCol = Math.max(colIndex - 1, 0);
+      const maxCol = Math.min(colIndex + 1, width);
+      for (let i = minRow; i <= maxRow; ++i) {
+        for (let j = minCol; j <= maxCol; ++j) {
+          if (grid[i][j] > 0) {
+            uniqueValues.add(grid[i][j]);
+          }
+        }
+      }
+    }
+  });
+});
+
+let result = 0;
+uniqueValues.forEach((v) => (result += gridNumbers[v]));
+console.log(result);
