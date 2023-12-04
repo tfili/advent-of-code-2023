@@ -2,7 +2,6 @@ import fs from "fs";
 
 const EMPTY = 0;
 const SYMBOL = -1
-const STAR = -2
 
 const lines = fs
   .readFileSync(process.argv[2], "utf-8")
@@ -41,22 +40,20 @@ for (let row = 0; row < height; ++row) {
       }
       grid[row][col] = lastIndex;
     } else {
-      grid[row][col] = c === "." ? EMPTY : 
-        c === "*" ? STAR : SYMBOL;
+      grid[row][col] = c === "." ? EMPTY : SYMBOL;
       lastIndex = undefined;
     }
   }
 }
 
-let result = 0;
+const uniqueValues = new Set<number>();
 grid.forEach((row, rowIndex) => {
   row.forEach((col, colIndex) => {
-    if (col === STAR) {
+    if (col === SYMBOL) {
       const minRow = Math.max(rowIndex - 1, 0);
       const maxRow = Math.min(rowIndex + 1, height);
       const minCol = Math.max(colIndex - 1, 0);
       const maxCol = Math.min(colIndex + 1, width);
-      const uniqueValues = new Set<number>();
       for (let i = minRow; i <= maxRow; ++i) {
         for (let j = minCol; j <= maxCol; ++j) {
           if (grid[i][j] > 0) {
@@ -64,13 +61,10 @@ grid.forEach((row, rowIndex) => {
           }
         }
       }
-      if (uniqueValues.size > 1) {
-        let starResult = 1;
-        uniqueValues.forEach((v) => (starResult *= gridNumbers[v]));
-        result += starResult;
-      }
     }
   });
 });
 
+let result = 0;
+uniqueValues.forEach((v) => (result += gridNumbers[v]));
 console.log(result);
